@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Boondock Math - app</title>
+<link rel="stylesheet" href="https://unpkg.com/sakura.css/css/sakura.css">
+<style>
+  :root { --accent: #8a3a3a; }
+  h1 { color: var(--accent); margin-bottom: 0.2em; }
+  .tag { color: var(--accent); font-style: italic; }
+  .card { border: 1px solid #ddd; border-left: 4px solid var(--accent); padding: 1em 1.2em; margin: 1.2em 0; border-radius: 4px; }
+  .big { font-size: 1.2rem; font-weight: 700; color: var(--accent); margin-top: 0.8em; }
+  .err { color: #b00; font-weight: 700; }
+  label { display: block; margin-top: 0.6em; font-size: 0.9em; }
+  input, select { max-width: 12em; }
+  .foot { margin-top: 2.5em; font-size: 0.85em; color: #777; }
+</style>
+</head>
+<body>
+<h1>Boondock Math</h1>
+<p class="tag">Tank truth, battery truth and bottle truth - labeled norms, honest arithmetic.</p>
+
+<div class="card">
+  <h3>The tank truth</h3>
+  <label for="t-gray">Gray tank (gallons)</label>
+  <input id="t-gray" type="number" step="any" value="40">
+  <label for="t-people">People aboard</label>
+  <input id="t-people" type="number" step="any" value="2">
+  <p class="big" id="t-out"></p>
+</div>
+
+<div class="card">
+  <h3>The battery truth</h3>
+  <label for="b-bank">Bank size (amp-hours)</label>
+  <input id="b-bank" type="number" step="any" value="200">
+  <label for="b-pct">Usable percent (50 lead-acid, 80 lithium)</label>
+  <input id="b-pct" type="number" step="any" value="50">
+  <label for="b-daily">Daily draw (amp-hours)</label>
+  <input id="b-daily" type="number" step="any" value="35">
+  <p class="big" id="b-out"></p>
+</div>
+
+<div class="card">
+  <h3>The bottle truth</h3>
+  <label for="p-bottles">20-pound propane bottles aboard</label>
+  <input id="p-bottles" type="number" step="any" value="2">
+  <label for="p-hours">Furnace hours per night</label>
+  <input id="p-hours" type="number" step="any" value="4">
+  <p class="big" id="p-out"></p>
+</div>
+
+<p class="foot">The 4-gallon navy-shower norm and the 12 furnace-hours a bottle are labeled norms - the arithmetic is honest, and the dump station keeps the honest ledger.</p>
+
+<script src="engine.js"></script>
+<script>
+function g(id){ return document.getElementById(id); }
+function v(id){ var n = parseFloat(g(id).value); return isNaN(n) ? NaN : n; }
+function show(id, s, bad){ var el = g(id); el.textContent = s; el.className = bad ? "err big" : "big"; }
+
+function runTank(){
+  var args = [v("t-gray"), v("t-people")];
+  var r = BoondockMath.tankPlan.apply(null, args);
+  if (r.error) return show("t-out", r.error, true);
+  show("t-out", BoondockMath.renderTank.apply(null, [r].concat(args)), false);
+}
+function runBatt(){
+  var args = [v("b-bank"), v("b-pct"), v("b-daily")];
+  var r = BoondockMath.battPlan.apply(null, args);
+  if (r.error) return show("b-out", r.error, true);
+  show("b-out", BoondockMath.renderBatt.apply(null, [r].concat(args)), false);
+}
+function runProp(){
+  var args = [v("p-bottles"), v("p-hours")];
+  var r = BoondockMath.propPlan.apply(null, args);
+  if (r.error) return show("p-out", r.error, true);
+  show("p-out", BoondockMath.renderProp.apply(null, [r].concat(args)), false);
+}
+["t-gray", "t-people"].forEach(function(id){ g(id).addEventListener("input", runTank); });
+["b-bank", "b-pct", "b-daily"].forEach(function(id){ g(id).addEventListener("input", runBatt); });
+["p-bottles", "p-hours"].forEach(function(id){ g(id).addEventListener("input", runProp); });
+runTank(); runBatt(); runProp();
+</script>
+</body>
+</html>
